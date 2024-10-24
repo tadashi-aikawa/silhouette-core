@@ -416,7 +416,7 @@ export class Repetition extends ValueObject<Props> {
           dayOffset,
           workdayOffset,
         });
-      default:
+      default: {
         const dayPeriod = token.match(/every (?<period>\d+) day/)?.groups
           ?.period;
         if (dayPeriod) {
@@ -425,6 +425,7 @@ export class Repetition extends ValueObject<Props> {
             workdayOffset,
           });
         }
+      }
     }
 
     // TODO: しっかりバリデートしたい
