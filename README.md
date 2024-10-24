@@ -4,7 +4,7 @@
     <div><a href="https://github.com/tadashi-aikawa/silhouette">Silhouette</a>のコアロジックを切り離したライブラリ</div>
     </p>
     <a href="https://github.com/tadashi-aikawa/silhouette-core/releases/latest"><img src="https://img.shields.io/github/release/tadashi-aikawa/silhouette-core.svg" /></a>
-    <a href="https://github.com/tadashi-aikawa/silhouette-core/actions"><img src="https://github.com/tadashi-aikawa/silhouette-core/workflows/Tests/badge.svg" /></a>
+    <a href="https://github.com/tadashi-aikawa/silhouette-core/actions"><img src="https://github.com/tadashi-aikawa/silhouette-core/workflows/CI/badge.svg" /></a>
     <img src="https://img.shields.io/github/downloads/tadashi-aikawa/silhouette-core/total" />
 </div>
 
