@@ -10,6 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - run: npm i -D --no-save conventional-changelog-conventionalcommits @semantic-release/git @sebbo2002/semantic-release-jsr
       - name: "Release"
         uses: cycjimmy/semantic-release-action@v4
