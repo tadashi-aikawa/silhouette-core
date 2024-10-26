@@ -14,9 +14,13 @@
 
 ## インストール
 
-TODO
+[JSR @tadashi-aikawa/silhouette-core](https://jsr.io/@tadashi-aikawa/silhouette-core) の右サイドを参照。
 
 ## 開発者向け
+
+### 環境
+
+- Deno v2
 
 ### 準備
 
