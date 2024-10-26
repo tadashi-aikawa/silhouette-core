@@ -384,15 +384,25 @@ export class Repetition extends ValueObject<Props> {
     return [token, 0, 0];
   }
 
+  /**
+   * 文字列パターンから複数の繰り返し情報を生成します
+   *
+   * ```ts
+   * Repetition.fromRepetitionsStr("non workday|tue/wed");
+   * Repetition.fromRepetitionsStr("non workday|tue/wed|15d");
+   * ```
+   */
   static fromRepetitionsStr(repetitionsStr: string): Repetition[] {
     return repetitionsStr.split("|").map((x) => Repetition.from(x));
   }
 
   /**
-   * 文字列パターンから繰り返し情報を生成します
+   * 文字列パターンから1つの繰り返し情報を生成します
    *
    * ```ts
-   * const rep = Repetition.fromRepetitionsStr("non workday|tue/wed");
+   * Repetition.from("weekday");
+   * Repetition.from("sun!/mon!");
+   * Repetition.from("workday end of month");
    * ```
    */
   static from(str: string): Repetition {
