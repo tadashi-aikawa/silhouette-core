@@ -1,4 +1,4 @@
-import { DateTime, Entity } from "owlelia";
+import { type DateTime, Entity } from "owlelia";
 import type { Repetition } from "../vo/Repetition.ts";
 import { ExhaustiveError } from "../../util/errors.ts";
 

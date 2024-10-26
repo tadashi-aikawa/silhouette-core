@@ -1,4 +1,4 @@
-import { DateTime, ValueObject } from "owlelia";
+import { type DateTime, ValueObject } from "owlelia";
 
 interface Props {
   name: string;
