@@ -1,4 +1,7 @@
 {
+  "name": "@tadashi-aikawa/silhouette-core",
+  "version": "0.0.0",
+  "exports": "./mod.ts",
   "tasks": {
     "dev": "deno run --watch main.ts",
     "ci": "deno lint && deno fmt --check && deno test"
