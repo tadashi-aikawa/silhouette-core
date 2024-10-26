@@ -41,7 +41,7 @@ export default {
     [
       "@semantic-release/git",
       {
-        assets: ["jsr.json"],
+        assets: ["deno.json"],
         message:
           "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
       },
