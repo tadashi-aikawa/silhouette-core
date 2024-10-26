@@ -8,6 +8,10 @@
     <img src="https://img.shields.io/github/downloads/tadashi-aikawa/silhouette-core/total" />
 </div>
 
+> [!WARNING]
+> v1に達していますが実際は達していません。semantic-releaseの挙動が想定と異なり1.0.0となってしまい、そのままJSRに登録され削除しなかったためそのままにしています。(一度バージョンつきでpublishするとJSRリポジトリから削除できない仕様のため)
+> v2がいわゆるv1という位置づけで開発を続けます。
+
 ## インストール
 
 TODO

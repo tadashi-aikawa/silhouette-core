@@ -6,7 +6,7 @@ export default {
       {
         preset: "conventionalcommits",
         releaseRules: [
-          { breaking: true, release: "minor" }, // TODO: v1になったら release: "major" にする
+          { breaking: true, release: "minor" }, // TODO: v2になったら release: "major" にする
           { type: "feat", release: "minor" },
           { type: "build", release: "minor" },
           { type: "style", release: "minor" },
