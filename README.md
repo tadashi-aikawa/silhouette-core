@@ -18,6 +18,15 @@ TODO
 
 ## 開発者向け
 
+### 準備
+
+以下でhooksの場所を変更する。
+
 ```bash
 git config core.hooksPath hooks
 ```
+
+### リリース
+
+[Release Action](https://github.com/tadashi-aikawa/silhouette-core/actions/workflows/release.yaml) を実行。
+
