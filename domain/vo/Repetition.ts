@@ -255,6 +255,9 @@ const repetitionBase = {
   workdayOffset: 0,
 } as const;
 
+/**
+ * 繰り返し情報を扱うクラス
+ */
 export class Repetition extends ValueObject<Props> {
   static get everyDay(): Repetition {
     return new Repetition(repetitionBase);
@@ -385,6 +388,13 @@ export class Repetition extends ValueObject<Props> {
     return repetitionsStr.split("|").map((x) => Repetition.from(x));
   }
 
+  /**
+   * 文字列パターンから繰り返し情報を生成します
+   *
+   * ```ts
+   * const rep = Repetition.fromRepetitionsStr("non workday|tue/wed");
+   * ```
+   */
   static from(str: string): Repetition {
     const [token, dayOffset, workdayOffset] = this.divideTokenWithOffset(str);
 
