@@ -275,6 +275,16 @@ parameterizedTest<
     [d("2023-01-01") , holidays          , undefined       , "2d/1d<1"                       , true],
     [d("2023-01-01") , holidays          , undefined       , "11d"                           , false],
     [d("2023-01-01") , holidays          , undefined       , "11d/21d"                       , false],
+    // 月日指定
+    [d("2023-01-01") , holidays          , undefined       , "0102"                          , false],
+    [d("2023-01-02") , holidays          , undefined       , "0102"                          , true],
+    [d("2023-02-01") , holidays          , undefined       , "0102"                          , false],
+    [d("2023-02-02") , holidays          , undefined       , "0102"                          , false],
+    [d("2024-01-01") , holidays          , undefined       , "0102"                          , false],
+    [d("2024-01-02") , holidays          , undefined       , "0102"                          , true],
+    [d("2024-02-01") , holidays          , undefined       , "0102"                          , false],
+    [d("2024-02-02") , holidays          , undefined       , "0102"                          , false],
+    //
     [d("2023-01-01") , holidays          , d("2023-01-01") , "every 2 day"                   , true],
     [d("2023-01-01") , holidays          , d("2023-01-01") , "every 2 day>1"                 , false],
     [d("2023-01-01") , holidays          , d("2023-01-01") , "every 2 day<2"                 , true],

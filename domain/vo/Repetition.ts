@@ -1,5 +1,30 @@
 import { ValueObject } from "owlelia";
 
+type LengthOfString<
+  S extends string,
+  Cnt extends any[] = [],
+> = S extends `${infer _}${infer R}` ? LengthOfString<R, [1, ...Cnt]>
+  : Cnt["length"];
+
+type ZeroPadding2<T extends string> = T extends any
+  ? LengthOfString<T> extends 2 ? T
+  : `0${T}`
+  : never;
+
+type Months =
+  | "1"
+  | "2"
+  | "3"
+  | "4"
+  | "5"
+  | "6"
+  | "7"
+  | "8"
+  | "9"
+  | "10"
+  | "11"
+  | "12";
+
 type Days =
   | "1"
   | "2"
@@ -33,6 +58,8 @@ type Days =
   | "30"
   | "31";
 
+type MMDD = `${ZeroPadding2<Months>}${ZeroPadding2<Days>}`;
+
 type WeekNo = 1 | 2 | 3 | 4 | 5;
 type DayOfWeekShortName = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
 export type Pattern =
@@ -49,6 +76,7 @@ export type Token =
   | `${WeekNo}${DayOfWeekShortName}`
   | `${WeekNo}${DayOfWeekShortName}!`
   | `${Days}d`
+  | `${MMDD}`
   | `every ${Days} days`
   | "end of month"
   | "workday end of month";
@@ -476,12 +504,34 @@ export class Repetition extends ValueObject<Props> {
       x.length > 0
         ? { type: "specific", values: x }
         : { type: "period", period: 1 };
+    if (days.length > 0) {
+      return new Repetition({
+        day: to(days),
+        dayOfWeek: [0, 1, 2, 3, 4, 5, 6],
+        dayOfWeekHoliday: [0, 1, 2, 3, 4, 5, 6],
+        week: { type: "period", period: 1 },
+        month: { type: "period", period: 1 },
+        dayOffset,
+        workdayOffset,
+      });
+    }
+
+    if (tokens.length > 1) {
+      throw new Error("日時指定を/区切りで複数区切りすることはできません");
+    }
+    if (tokens[0].length != 4) {
+      throw new Error("日時指定はMMDDの4桁表記にしてください(例: 0828)");
+    }
+
+    // 今後拡張するときはif文を増やしたり条件分岐する
+    const mm = tokens[0].slice(0, 2);
+    const dd = tokens[0].slice(2);
     return new Repetition({
-      day: to(days),
+      day: { type: "specific", values: [Number(dd)] }, // FIXME:tokenを解析して日を入れる
       dayOfWeek: [0, 1, 2, 3, 4, 5, 6],
       dayOfWeekHoliday: [0, 1, 2, 3, 4, 5, 6],
       week: { type: "period", period: 1 },
-      month: { type: "period", period: 1 },
+      month: { type: "specific", values: [Number(mm)] }, // FIXME:tokenを解析して月を入れる
       dayOffset,
       workdayOffset,
     });

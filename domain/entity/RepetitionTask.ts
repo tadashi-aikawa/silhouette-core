@@ -128,7 +128,14 @@ function needTaskBy(
     return targetDate.diffDays(baseDate) % repetition.day.period === 0;
   }
 
-  return repetition.day.values.includes(targetDate.day);
+  // WARNING:
+  // 現状はmonth.periodに対応していないためそちらの考慮は不要
+  // - month.periodの場合常に値は1(毎月)で考慮 = 気にしなくてOK (月判定は常にtrue)
+  // - month.specificのケースだけを考慮する
+  return repetition.month.type === "specific"
+    ? repetition.day.values.includes(targetDate.day) &&
+      repetition.month.values.includes(targetDate.month)
+    : repetition.day.values.includes(targetDate.day);
 }
 
 function includesDay(
