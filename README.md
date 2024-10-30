@@ -14,7 +14,7 @@
 
 ## インストール
 
-[JSR @tadashi-aikawa/silhouette-core](https://jsr.io/@tadashi-aikawa/silhouette-core) の右サイドを参照。
+[JSR @tadashi-aikawa/silhouette-core] の右サイドを参照。
 
 ## 開発者向け
 
@@ -32,5 +32,7 @@ git config core.hooksPath hooks
 
 ### リリース
 
-[Release Action](https://github.com/tadashi-aikawa/silhouette-core/actions/workflows/release.yaml) を実行。
+[Release Action] を実行。
 
+[JSR @tadashi-aikawa/silhouette-core]: https://jsr.io/@tadashi-aikawa/silhouette-core
+[Release Action]: https://github.com/tadashi-aikawa/silhouette-core/actions/workflows/release.yaml
