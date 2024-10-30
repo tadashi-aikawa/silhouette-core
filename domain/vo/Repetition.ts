@@ -2,13 +2,13 @@ import { ValueObject } from "owlelia";
 
 type LengthOfString<
   S extends string,
-  Cnt extends any[] = [],
+  Cnt extends unknown[] = [],
 > = S extends `${infer _}${infer R}` ? LengthOfString<R, [1, ...Cnt]>
   : Cnt["length"];
 
-type ZeroPadding2<T extends string> = T extends any
-  ? LengthOfString<T> extends 2 ? T
-  : `0${T}`
+type ZeroPadding2<T extends string> = T extends unknown
+  ? LengthOfString<T> extends 1 ? `0${T}`
+  : T
   : never;
 
 type Months =
