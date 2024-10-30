@@ -5,7 +5,7 @@ if ! cd "$(git rev-parse --show-toplevel)"; then
   exit 1
 fi
 
-if ! deno test; then
+if ! deno run ci; then
   echo "Test failed. Aborting push."
   exit 1
 fi
