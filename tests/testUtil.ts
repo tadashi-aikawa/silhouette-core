@@ -2,10 +2,14 @@ export function parameterizedTest<T>(
   name: string,
   cases: T[],
   testFn: (input: T) => void,
+  toTitle?: (name: string, input: T) => string,
 ) {
   for (const testCase of cases) {
-    Deno.test(`${name} -> ${JSON.stringify(testCase)}`, () => {
-      testFn(testCase);
-    });
+    Deno.test(
+      toTitle?.(name, testCase) ?? `${name} -> ${JSON.stringify(testCase)}`,
+      () => {
+        testFn(testCase);
+      },
+    );
   }
 }

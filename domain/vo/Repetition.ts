@@ -80,6 +80,7 @@ export type Token =
   | `every ${Days} days`
   | "end of month"
   | "workday end of month";
+export type ShiftDirection = "next" | "prev";
 
 interface Props {
   day: Pattern;
@@ -90,6 +91,7 @@ interface Props {
   dayOffset: number;
   workdayOffset: number;
   special?: "end of month" | "beginning of month";
+  workdayShift?: ShiftDirection;
 }
 
 // 0: Sun, 1: Mon, ... 6: Sat
@@ -283,6 +285,37 @@ const repetitionBase = {
   workdayOffset: 0,
 } as const;
 
+export function divideTokenWithOffset(
+  token: string,
+): [
+  token: string,
+  dayOffset: number,
+  workdayOffset: number,
+  workdayShift: ShiftDirection | undefined,
+] {
+  const [tp, pastOffset] = token.split("<");
+  if (pastOffset === "!") {
+    return [tp, 0, 0, "prev"];
+  }
+  if (pastOffset) {
+    return pastOffset.endsWith("!")
+      ? [tp, 0, -1 * Number(pastOffset.slice(0, -1)), undefined]
+      : [tp, -1 * Number(pastOffset), 0, undefined];
+  }
+
+  const [tf, futureOffset] = token.split(">");
+  if (futureOffset === "!") {
+    return [tf, 0, 0, "next"];
+  }
+  if (futureOffset) {
+    return futureOffset.endsWith("!")
+      ? [tf, 0, Number(futureOffset.slice(0, -1)), undefined]
+      : [tf, Number(futureOffset), 0, undefined];
+  }
+
+  return [token, 0, 0, undefined];
+}
+
 /**
  * 繰り返し情報を扱うクラス
  */
@@ -383,6 +416,9 @@ export class Repetition extends ValueObject<Props> {
   get workdayOffset(): number {
     return this._value.workdayOffset;
   }
+  get workdayShift(): ShiftDirection | undefined {
+    return this._value.workdayShift;
+  }
   get special(): Props["special"] {
     return this._value.special;
   }
@@ -392,24 +428,8 @@ export class Repetition extends ValueObject<Props> {
     return new Repetition({ ...this._value, dayOffset, workdayOffset });
   }
 
-  private static divideTokenWithOffset(
-    token: string,
-  ): [token: string, dayOffset: number, workdayOffset: number] {
-    const [tp, pastOffset] = token.split("<");
-    if (pastOffset) {
-      return pastOffset.endsWith("!")
-        ? [tp, 0, -1 * Number(pastOffset.slice(0, -1))]
-        : [tp, -1 * Number(pastOffset), 0];
-    }
-
-    const [tf, futureOffset] = token.split(">");
-    if (futureOffset) {
-      return futureOffset.endsWith("!")
-        ? [tf, 0, Number(futureOffset.slice(0, -1))]
-        : [tf, Number(futureOffset), 0];
-    }
-
-    return [token, 0, 0];
+  withWorkdayShift(workdayShift: ShiftDirection | undefined): Repetition {
+    return new Repetition({ ...this._value, workdayShift });
   }
 
   /**
@@ -434,44 +454,65 @@ export class Repetition extends ValueObject<Props> {
    * ```
    */
   static from(str: string): Repetition {
-    const [token, dayOffset, workdayOffset] = this.divideTokenWithOffset(str);
+    const [token, dayOffset, workdayOffset, workdayShift] =
+      divideTokenWithOffset(str);
 
     switch (token as Token | string) {
       case "every day":
-        return Repetition.everyDay.withOffset({ dayOffset, workdayOffset });
+        return Repetition.everyDay
+          .withOffset({ dayOffset, workdayOffset })
+          .withWorkdayShift(workdayShift);
       case "weekday":
-        return Repetition.weekday.withOffset({ dayOffset, workdayOffset });
+        return Repetition.weekday
+          .withOffset({ dayOffset, workdayOffset })
+          .withWorkdayShift(workdayShift);
       case "weekend":
-        return Repetition.weekend.withOffset({ dayOffset, workdayOffset });
+        return Repetition.weekend
+          .withOffset({ dayOffset, workdayOffset })
+          .withWorkdayShift(workdayShift);
       case "workday":
-        return Repetition.workday.withOffset({ dayOffset, workdayOffset });
+        return Repetition.workday
+          .withOffset({ dayOffset, workdayOffset })
+          .withWorkdayShift(workdayShift);
       case "non workday":
-        return Repetition.nonWorkday.withOffset({ dayOffset, workdayOffset });
+        return Repetition.nonWorkday
+          .withOffset({ dayOffset, workdayOffset })
+          .withWorkdayShift(workdayShift);
       case "end of month":
-        return Repetition.endOfMonth.withOffset({ dayOffset, workdayOffset });
+        return Repetition.endOfMonth
+          .withOffset({ dayOffset, workdayOffset })
+          .withWorkdayShift(workdayShift);
       case "workday end of month":
-        return Repetition.workdayEndOfMonth.withOffset({
-          dayOffset,
-          workdayOffset,
-        });
+        return Repetition.workdayEndOfMonth
+          .withOffset({
+            dayOffset,
+            workdayOffset,
+          })
+          .withWorkdayShift(workdayShift);
       case "beginning of month":
-        return Repetition.beginningOfMonth.withOffset({
-          dayOffset,
-          workdayOffset,
-        });
+        return Repetition.beginningOfMonth
+          .withOffset({
+            dayOffset,
+            workdayOffset,
+          })
+          .withWorkdayShift(workdayShift);
       case "workday beginning of month":
-        return Repetition.workdayBeginningOfMonth.withOffset({
-          dayOffset,
-          workdayOffset,
-        });
+        return Repetition.workdayBeginningOfMonth
+          .withOffset({
+            dayOffset,
+            workdayOffset,
+          })
+          .withWorkdayShift(workdayShift);
       default: {
         const dayPeriod = token.match(/every (?<period>\d+) day/)?.groups
           ?.period;
         if (dayPeriod) {
-          return Repetition.everyNDay(Number(dayPeriod)).withOffset({
-            dayOffset,
-            workdayOffset,
-          });
+          return Repetition.everyNDay(Number(dayPeriod))
+            .withOffset({
+              dayOffset,
+              workdayOffset,
+            })
+            .withWorkdayShift(workdayShift);
         }
       }
     }
@@ -494,6 +535,7 @@ export class Repetition extends ValueObject<Props> {
         month: { type: "period", period: 1 },
         dayOffset,
         workdayOffset,
+        workdayShift,
       });
     }
 
@@ -513,6 +555,7 @@ export class Repetition extends ValueObject<Props> {
         month: { type: "period", period: 1 },
         dayOffset,
         workdayOffset,
+        workdayShift,
       });
     }
 
@@ -534,6 +577,7 @@ export class Repetition extends ValueObject<Props> {
       month: { type: "specific", values: [Number(mm)] }, // FIXME:tokenを解析して月を入れる
       dayOffset,
       workdayOffset,
+      workdayShift,
     });
   }
 }

@@ -1,5 +1,5 @@
 import { type DateTime, Entity } from "owlelia";
-import type { Repetition } from "../vo/Repetition.ts";
+import type { Repetition, ShiftDirection } from "../vo/Repetition.ts";
 import { ExhaustiveError } from "../../util/errors.ts";
 
 interface Props {
@@ -55,6 +55,35 @@ function needTaskBy(
   baseDate?: DateTime,
 ): boolean {
   let targetDate = date.clone();
+
+  // 稼働日シフトの調整
+  if (repetition.workdayShift) {
+    if (!isWorkday(date, holidays)) {
+      return false;
+    }
+
+    let shiftedTargetDate = date.clone();
+
+    const iterate = defineReverseDateIterateMethod(repetition.workdayShift);
+    while (true) {
+      shiftedTargetDate = iterate(shiftedTargetDate);
+      if (isWorkday(shiftedTargetDate, holidays)) {
+        break;
+      }
+      if (
+        needTaskBy(
+          shiftedTargetDate,
+          holidays,
+          repetition.withWorkdayShift(undefined),
+          baseDate,
+        )
+      ) {
+        return true;
+      }
+    }
+  }
+
+  // オフセットの調整
   if (repetition.dayOffset !== 0) {
     targetDate = date.minusDays(repetition.dayOffset);
   }
@@ -185,7 +214,28 @@ function isWorkday(date: DateTime, holidays: DateTime[]): boolean {
   return isWeekday(date) && !isHoliday(date, holidays);
 }
 
-function reverseOffsetWorkdays(
+/**
+ * シフト方向に応じた日付イテレートメソッドを作成する
+ * イテレートするのはシフト方向とは逆側なので注意
+ */
+function defineReverseDateIterateMethod(
+  shiftDirection: ShiftDirection,
+): (date: DateTime) => DateTime {
+  switch (shiftDirection) {
+    case "prev":
+      return (dt: DateTime) => dt.plusDays(1);
+    case "next":
+      return (dt: DateTime) => dt.minusDays(1);
+    default:
+      throw new ExhaustiveError(shiftDirection);
+  }
+}
+
+/**
+ * ある日付 から ${-1 * days}稼働日 ずらしたら ${dst} になるような日付リストを返す
+ * 複数結果が存在するのは、途中で稼働日ではない日が混ざるケースがあるため
+ */
+export function reverseOffsetWorkdays(
   dst: DateTime,
   days: number,
   holidays: DateTime[],
