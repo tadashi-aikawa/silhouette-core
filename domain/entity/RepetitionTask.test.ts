@@ -706,7 +706,7 @@ parameterizedTest<
   ],
   ([date, holidays, baseDate, repetitionWord, expected]) => {
     const task = RepetitionTask.of({
-      repetitions: Repetition.fromRepetitionsStr(repetitionWord),
+      repetitions: Repetition.fromRepetitionsStr(repetitionWord)._ok!,
       baseDate,
       name: "hoge",
     });

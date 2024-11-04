@@ -1,4 +1,7 @@
-import { ValueObject } from "owlelia";
+import { aggregate, err, ok, type Result, ValueObject } from "owlelia";
+import { ParseError } from "../../util/errors.ts";
+import { match } from "../../util/strings.ts";
+import { uniq } from "../../util/collections.ts";
 
 type LengthOfString<
   S extends string,
@@ -440,8 +443,10 @@ export class Repetition extends ValueObject<Props> {
    * Repetition.fromRepetitionsStr("non workday|tue/wed|15d");
    * ```
    */
-  static fromRepetitionsStr(repetitionsStr: string): Repetition[] {
-    return repetitionsStr.split("|").map((x) => Repetition.from(x));
+  static fromRepetitionsStr(
+    repetitionsStr: string,
+  ): Result<Repetition[], ParseError[]> {
+    return aggregate(repetitionsStr.split("|").map((x) => Repetition.from(x)));
   }
 
   /**
@@ -453,73 +458,134 @@ export class Repetition extends ValueObject<Props> {
    * Repetition.from("workday end of month");
    * ```
    */
-  static from(str: string): Repetition {
+  static from(str: string): Result<Repetition, ParseError> {
     const [token, dayOffset, workdayOffset, workdayShift] =
       divideTokenWithOffset(str);
 
     switch (token as Token | string) {
       case "every day":
-        return Repetition.everyDay
-          .withOffset({ dayOffset, workdayOffset })
-          .withWorkdayShift(workdayShift);
+        return ok(
+          Repetition.everyDay
+            .withOffset({ dayOffset, workdayOffset })
+            .withWorkdayShift(workdayShift),
+        );
+      case "everyday":
+        return err(
+          new ParseError("everyとdayの間には半角スペースを入れてください。"),
+        );
       case "weekday":
-        return Repetition.weekday
-          .withOffset({ dayOffset, workdayOffset })
-          .withWorkdayShift(workdayShift);
+        return ok(
+          Repetition.weekday
+            .withOffset({ dayOffset, workdayOffset })
+            .withWorkdayShift(workdayShift),
+        );
+      case "week day":
+        return err(
+          new ParseError("weekとdayの間には半角スペースを入れないでください。"),
+        );
       case "weekend":
-        return Repetition.weekend
-          .withOffset({ dayOffset, workdayOffset })
-          .withWorkdayShift(workdayShift);
+        return ok(
+          Repetition.weekend
+            .withOffset({ dayOffset, workdayOffset })
+            .withWorkdayShift(workdayShift),
+        );
+      case "week end":
+        return err(
+          new ParseError("weekとendの間には半角スペースを入れないでください。"),
+        );
       case "workday":
-        return Repetition.workday
-          .withOffset({ dayOffset, workdayOffset })
-          .withWorkdayShift(workdayShift);
+        return ok(
+          Repetition.workday
+            .withOffset({ dayOffset, workdayOffset })
+            .withWorkdayShift(workdayShift),
+        );
+      case "work day":
+        return err(
+          new ParseError("workとdayの間には半角スペースを入れないでください。"),
+        );
       case "non workday":
-        return Repetition.nonWorkday
-          .withOffset({ dayOffset, workdayOffset })
-          .withWorkdayShift(workdayShift);
+        return ok(
+          Repetition.nonWorkday
+            .withOffset({ dayOffset, workdayOffset })
+            .withWorkdayShift(workdayShift),
+        );
+      case "non work day":
+        return err(
+          new ParseError("workとdayの間には半角スペースを入れないでください。"),
+        );
       case "end of month":
-        return Repetition.endOfMonth
-          .withOffset({ dayOffset, workdayOffset })
-          .withWorkdayShift(workdayShift);
+        return ok(
+          Repetition.endOfMonth
+            .withOffset({ dayOffset, workdayOffset })
+            .withWorkdayShift(workdayShift),
+        );
       case "workday end of month":
-        return Repetition.workdayEndOfMonth
-          .withOffset({
-            dayOffset,
-            workdayOffset,
-          })
-          .withWorkdayShift(workdayShift);
-      case "beginning of month":
-        return Repetition.beginningOfMonth
-          .withOffset({
-            dayOffset,
-            workdayOffset,
-          })
-          .withWorkdayShift(workdayShift);
-      case "workday beginning of month":
-        return Repetition.workdayBeginningOfMonth
-          .withOffset({
-            dayOffset,
-            workdayOffset,
-          })
-          .withWorkdayShift(workdayShift);
-      default: {
-        const dayPeriod = token.match(/every (?<period>\d+) day/)?.groups
-          ?.period;
-        if (dayPeriod) {
-          return Repetition.everyNDay(Number(dayPeriod))
+        return ok(
+          Repetition.workdayEndOfMonth
             .withOffset({
               dayOffset,
               workdayOffset,
             })
-            .withWorkdayShift(workdayShift);
+            .withWorkdayShift(workdayShift),
+        );
+      case "beginning of month":
+        return ok(
+          Repetition.beginningOfMonth
+            .withOffset({
+              dayOffset,
+              workdayOffset,
+            })
+            .withWorkdayShift(workdayShift),
+        );
+      case "workday beginning of month":
+        return ok(
+          Repetition.workdayBeginningOfMonth
+            .withOffset({
+              dayOffset,
+              workdayOffset,
+            })
+            .withWorkdayShift(workdayShift),
+        );
+      default: {
+        const dayPeriod = token.match(/every (?<period>\d+) day/)?.groups
+          ?.period;
+        if (dayPeriod) {
+          return ok(
+            Repetition.everyNDay(Number(dayPeriod))
+              .withOffset({
+                dayOffset,
+                workdayOffset,
+              })
+              .withWorkdayShift(workdayShift),
+          );
         }
       }
     }
 
-    // TODO: しっかりバリデートしたい
+    // 毎年特定日繰り返し
+    const mm = token.slice(0, 2);
+    const dd = token.slice(2);
+    if (match(mm, /(0[1-9]|1[0-2])/) && match(dd, /(0[1-9]|[12][0-9]|3[01])/)) {
+      return ok(
+        new Repetition({
+          day: { type: "specific", values: [Number(dd)] }, // FIXME:tokenを解析して日を入れる
+          dayOfWeek: [0, 1, 2, 3, 4, 5, 6],
+          dayOfWeekHoliday: [0, 1, 2, 3, 4, 5, 6],
+          week: { type: "period", period: 1 },
+          month: { type: "specific", values: [Number(mm)] }, // FIXME:tokenを解析して月を入れる
+          dayOffset,
+          workdayOffset,
+          workdayShift,
+        }),
+      );
+    }
+
+    // --------------------------------------------------
+    // / の複数指定解析系
+    // --------------------------------------------------
     const tokens: Token[] = token.split("/") as Token[];
 
+    // 曜日系
     const dayOfWeek = tokens
       .map((x) => DAY_OF_WEEK_MAPPINGS[x] ?? DAY_OF_WEEK_WORKDAY_MAPPINGS[x])
       .filter((x) => x !== undefined);
@@ -527,57 +593,61 @@ export class Repetition extends ValueObject<Props> {
       .map((x) => DAY_OF_WEEK_MAPPINGS[x] ?? DAY_OF_WEEK_HOLIDAY_MAPPINGS[x])
       .filter((x) => x !== undefined);
     if (dayOfWeek.length > 0 || dayOfWeekHoliday.length > 0) {
-      return new Repetition({
-        day: { type: "period", period: 1 },
-        dayOfWeek,
-        dayOfWeekHoliday,
-        week: { type: "period", period: 1 },
-        month: { type: "period", period: 1 },
-        dayOffset,
-        workdayOffset,
-        workdayShift,
-      });
+      if (tokens.length !== uniq([...dayOfWeek, ...dayOfWeekHoliday]).length) {
+        return err(
+          new ParseError(
+            `曜日とそれ以外のパターンを/で複数指定することはできません (値: ${token})`,
+          ),
+        );
+      }
+      return ok(
+        new Repetition({
+          day: { type: "period", period: 1 },
+          dayOfWeek,
+          dayOfWeekHoliday,
+          week: { type: "period", period: 1 },
+          month: { type: "period", period: 1 },
+          dayOffset,
+          workdayOffset,
+          workdayShift,
+        }),
+      );
     }
 
+    // 月の特定日
     const days = tokens
-      .filter((x) => Boolean(x.match(/^[0-9]+d$/)))
+      .filter((x) => match(x, /(0?[1-9]|[12][0-9]|3[01])d/))
       .map((x) => Number(x.slice(0, -1)));
     const to = (x: number[]): Pattern =>
       x.length > 0
         ? { type: "specific", values: x }
         : { type: "period", period: 1 };
     if (days.length > 0) {
-      return new Repetition({
-        day: to(days),
-        dayOfWeek: [0, 1, 2, 3, 4, 5, 6],
-        dayOfWeekHoliday: [0, 1, 2, 3, 4, 5, 6],
-        week: { type: "period", period: 1 },
-        month: { type: "period", period: 1 },
-        dayOffset,
-        workdayOffset,
-        workdayShift,
-      });
+      if (days.length !== tokens.length) {
+        return err(
+          new ParseError(
+            `毎月特定日とそれ以外のパターンを/で複数指定することはできません (値: ${token})`,
+          ),
+        );
+      }
+      return ok(
+        new Repetition({
+          day: to(days),
+          dayOfWeek: [0, 1, 2, 3, 4, 5, 6],
+          dayOfWeekHoliday: [0, 1, 2, 3, 4, 5, 6],
+          week: { type: "period", period: 1 },
+          month: { type: "period", period: 1 },
+          dayOffset,
+          workdayOffset,
+          workdayShift,
+        }),
+      );
     }
 
-    if (tokens.length > 1) {
-      throw new Error("日時指定を/区切りで複数区切りすることはできません");
-    }
-    if (tokens[0].length != 4) {
-      throw new Error("日時指定はMMDDの4桁表記にしてください(例: 0828)");
-    }
-
-    // 今後拡張するときはif文を増やしたり条件分岐する
-    const mm = tokens[0].slice(0, 2);
-    const dd = tokens[0].slice(2);
-    return new Repetition({
-      day: { type: "specific", values: [Number(dd)] }, // FIXME:tokenを解析して日を入れる
-      dayOfWeek: [0, 1, 2, 3, 4, 5, 6],
-      dayOfWeekHoliday: [0, 1, 2, 3, 4, 5, 6],
-      week: { type: "period", period: 1 },
-      month: { type: "specific", values: [Number(mm)] }, // FIXME:tokenを解析して月を入れる
-      dayOffset,
-      workdayOffset,
-      workdayShift,
-    });
+    return err(
+      new ParseError(
+        `"${token}" は解析できませんでした。定義されている繰り返しパターンで指定してください。`,
+      ),
+    );
   }
 }

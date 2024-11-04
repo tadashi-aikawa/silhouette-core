@@ -7,7 +7,7 @@ const s = (values: number[]) => ({ type: "specific", values }) as const;
 const all = [0, 1, 2, 3, 4, 5, 6];
 
 Deno.test("fromRepetitionsStr: 1つの条件を指定できる", () => {
-  const actual = Repetition.fromRepetitionsStr("non workday");
+  const actual = Repetition.fromRepetitionsStr("non workday")._ok!;
   assertEquals(actual.length, 1);
 
   assertEquals(actual[0].day, p(1));
@@ -21,7 +21,7 @@ Deno.test("fromRepetitionsStr: 1つの条件を指定できる", () => {
 });
 
 Deno.test("fromRepetitionsStr: 2つの条件を指定できる", () => {
-  const actual = Repetition.fromRepetitionsStr("non workday|tue/wed");
+  const actual = Repetition.fromRepetitionsStr("non workday|tue/wed")._ok!;
   assertEquals(actual.length, 2);
 
   assertEquals(actual[0].day, p(1));
@@ -44,7 +44,7 @@ Deno.test("fromRepetitionsStr: 2つの条件を指定できる", () => {
 });
 
 Deno.test("fromRepetitionsStr: 3つの条件を指定できる", () => {
-  const actual = Repetition.fromRepetitionsStr("non workday|tue/wed|15d");
+  const actual = Repetition.fromRepetitionsStr("non workday|tue/wed|15d")._ok!;
   assertEquals(actual.length, 3);
 
   assertEquals(actual[0].day, p(1));
@@ -76,7 +76,7 @@ Deno.test("fromRepetitionsStr: 3つの条件を指定できる", () => {
 });
 
 parameterizedTest(
-  "from",
+  "from(ok)",
   // deno-fmt-ignore
   // prettier-ignore
   //  value                        | day         | dayOfWeek       | dayOfWeekHoliday | week | month   | dayO| workdayO | workdayShift | special
@@ -145,7 +145,7 @@ parameterizedTest(
     workdayShift,
     special,
   ]) => {
-    const actual = Repetition.from(value);
+    const actual = Repetition.from(value)._ok;
 
     assertEquals(actual?.day, day);
     assertEquals(actual?.dayOfWeek, dayOfWeek);
@@ -157,6 +157,46 @@ parameterizedTest(
     assertEquals(actual?.workdayShift, workdayShift);
     assertEquals(actual?.special, special);
   },
+);
+
+const toInvalidPatternError = (token: string) =>
+  `"${token}" は解析できませんでした。定義されている繰り返しパターンで指定してください。`;
+const toInvalidPatternsError = (token: string, target: string) =>
+  `${target}とそれ以外のパターンを/で複数指定することはできません (値: ${token})`;
+parameterizedTest<[Parameters<typeof Repetition.from>[0], string | undefined]>(
+  "from(err)",
+  // deno-fmt-ignore
+  // prettier-ignore
+  //   str                   |  expected
+  [
+    [  "every day"           , undefined],
+    [  "everyday"            , "everyとdayの間には半角スペースを入れてください。" ],
+    [  "weekday"             , undefined],
+    [  "week day"            , "weekとdayの間には半角スペースを入れないでください。"],
+    [  "weekend"             , undefined],
+    [  "week end"            , "weekとendの間には半角スペースを入れないでください。"],
+    [  "workday"             , undefined],
+    [  "work day"            , "workとdayの間には半角スペースを入れないでください。"],
+    [  "non workday"         , undefined],
+    [  "non work day"        , "workとdayの間には半角スペースを入れないでください。"],
+    [  "mon/tue/wed"         , undefined],
+    [  "hoge"                , toInvalidPatternError("hoge")],
+    [  "hoge/fuga"           , toInvalidPatternError("hoge/fuga")],
+    [  "mod/tue/web"         , toInvalidPatternsError("mod/tue/web", "曜日")],
+    [  "mon/1d"              , toInvalidPatternsError("mon/1d", "曜日")],
+    [  "1d/mon"              , toInvalidPatternsError("1d/mon", "曜日")],
+    [  "1d/11d/21d/31d"      , undefined],
+    [  "01d"                 , undefined],
+    [  "32d"                 , toInvalidPatternError("32d")],
+    [  "1d/32d"              , toInvalidPatternsError("1d/32d", "毎月特定日")],
+  ] as const,
+  ([str, expected]) => {
+    assertEquals(Repetition.from(str)._err?.message, expected);
+  },
+  (name, [str, expected]) =>
+    `[${name}] Repetition.from("${str}") returns ${
+      expected ? "a error -> " + expected : "no error"
+    }`,
 );
 
 parameterizedTest<

@@ -3,3 +3,5 @@ export class ExhaustiveError extends Error {
     super(message);
   }
 }
+
+export class ParseError extends Error {}
