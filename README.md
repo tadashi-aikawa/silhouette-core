@@ -6,6 +6,7 @@
     <a href="https://github.com/tadashi-aikawa/silhouette-core/releases/latest"><img src="https://img.shields.io/github/release/tadashi-aikawa/silhouette-core.svg" /></a>
     <a href="https://github.com/tadashi-aikawa/silhouette-core/actions"><img src="https://github.com/tadashi-aikawa/silhouette-core/workflows/CI/badge.svg" /></a>
     <img src="https://img.shields.io/github/downloads/tadashi-aikawa/silhouette-core/total" />
+    <img src="https://img.shields.io/github/license/mashape/apistatus.svg" />
 </div>
 
 > [!WARNING]
