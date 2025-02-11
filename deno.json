@@ -1,6 +1,6 @@
 {
   "name": "@tadashi-aikawa/silhouette-core",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "exports": "./mod.ts",
   "license": "MIT",
   "tasks": {
