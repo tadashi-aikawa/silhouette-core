@@ -464,54 +464,39 @@ export class Repetition extends ValueObject<Props> {
 
     switch (token as Token | string) {
       case "every day":
+      case "everyday":
         return ok(
           Repetition.everyDay
             .withOffset({ dayOffset, workdayOffset })
             .withWorkdayShift(workdayShift),
         );
-      case "everyday":
-        return err(
-          new ParseError("everyとdayの間には半角スペースを入れてください。"),
-        );
       case "weekday":
+      case "week day":
         return ok(
           Repetition.weekday
             .withOffset({ dayOffset, workdayOffset })
             .withWorkdayShift(workdayShift),
         );
-      case "week day":
-        return err(
-          new ParseError("weekとdayの間には半角スペースを入れないでください。"),
-        );
       case "weekend":
+      case "week end":
         return ok(
           Repetition.weekend
             .withOffset({ dayOffset, workdayOffset })
             .withWorkdayShift(workdayShift),
         );
-      case "week end":
-        return err(
-          new ParseError("weekとendの間には半角スペースを入れないでください。"),
-        );
       case "workday":
+      case "work day":
         return ok(
           Repetition.workday
             .withOffset({ dayOffset, workdayOffset })
             .withWorkdayShift(workdayShift),
         );
-      case "work day":
-        return err(
-          new ParseError("workとdayの間には半角スペースを入れないでください。"),
-        );
       case "non workday":
+      case "non work day":
         return ok(
           Repetition.nonWorkday
             .withOffset({ dayOffset, workdayOffset })
             .withWorkdayShift(workdayShift),
-        );
-      case "non work day":
-        return err(
-          new ParseError("workとdayの間には半角スペースを入れないでください。"),
         );
       case "end of month":
         return ok(

@@ -83,10 +83,15 @@ parameterizedTest(
   [
     // 定型
     [ "every day"                  , p(1)        , all             , all              , p(1) , p(1)    , 0   , 0        , undefined    , undefined            ],
+    [ "everyday"        /* alias */, p(1)        , all             , all              , p(1) , p(1)    , 0   , 0        , undefined    , undefined            ],
     [ "weekday"                    , p(1)        , [1, 2, 3, 4, 5] , [1, 2, 3, 4, 5]  , p(1) , p(1)    , 0   , 0        , undefined    , undefined            ],
+    [ "week day"        /* alias */, p(1)        , [1, 2, 3, 4, 5] , [1, 2, 3, 4, 5]  , p(1) , p(1)    , 0   , 0        , undefined    , undefined            ],
     [ "weekend"                    , p(1)        , [0, 6]          , [0, 6]           , p(1) , p(1)    , 0   , 0        , undefined    , undefined            ],
+    [ "week end"        /* alias */, p(1)        , [0, 6]          , [0, 6]           , p(1) , p(1)    , 0   , 0        , undefined    , undefined            ],
     [ "workday"                    , p(1)        , [1, 2, 3, 4, 5] , []               , p(1) , p(1)    , 0   , 0        , undefined    , undefined            ],
+    [ "work day"        /* alias */, p(1)        , [1, 2, 3, 4, 5] , []               , p(1) , p(1)    , 0   , 0        , undefined    , undefined            ],
     [ "non workday"                , p(1)        , [0, 6]          , all              , p(1) , p(1)    , 0   , 0        , undefined    , undefined            ],
+    [ "non work day"    /* alias */, p(1)        , [0, 6]          , all              , p(1) , p(1)    , 0   , 0        , undefined    , undefined            ],
     [ "every 3 day"                , p(3)        , all             , all              , p(1) , p(1)    , 0   , 0        , undefined    , undefined            ],
     // 曜日
     [ "sun"                        , p(1)        , [0]             , [0]              , p(1) , p(1)    , 0   , 0        , undefined    , undefined            ],
@@ -170,15 +175,10 @@ parameterizedTest<[Parameters<typeof Repetition.from>[0], string | undefined]>(
   //   str                   |  expected
   [
     [  "every day"           , undefined],
-    [  "everyday"            , "everyとdayの間には半角スペースを入れてください。" ],
     [  "weekday"             , undefined],
-    [  "week day"            , "weekとdayの間には半角スペースを入れないでください。"],
     [  "weekend"             , undefined],
-    [  "week end"            , "weekとendの間には半角スペースを入れないでください。"],
     [  "workday"             , undefined],
-    [  "work day"            , "workとdayの間には半角スペースを入れないでください。"],
     [  "non workday"         , undefined],
-    [  "non work day"        , "workとdayの間には半角スペースを入れないでください。"],
     [  "mon/tue/wed"         , undefined],
     [  "hoge"                , toInvalidPatternError("hoge")],
     [  "hoge/fuga"           , toInvalidPatternError("hoge/fuga")],
