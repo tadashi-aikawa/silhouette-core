@@ -1,37 +1,27 @@
 {
-  "version": "4",
+  "version": "5",
   "specifiers": {
-    "jsr:@std/assert@1": "1.0.6",
-    "jsr:@std/assert@^1.0.6": "1.0.6",
-    "jsr:@std/internal@^1.0.4": "1.0.4",
-    "jsr:@std/testing@*": "1.0.3",
-    "npm:owlelia@0.48.1": "0.48.1",
-    "npm:owlelia@~0.48.1": "0.48.1"
+    "jsr:@std/assert@1": "1.0.16",
+    "jsr:@std/internal@^1.0.12": "1.0.12",
+    "npm:owlelia@0.49": "0.49.0"
   },
   "jsr": {
-    "@std/assert@1.0.6": {
-      "integrity": "1904c05806a25d94fe791d6d883b685c9e2dcd60e4f9fc30f4fc5cf010c72207",
+    "@std/assert@1.0.16": {
+      "integrity": "6a7272ed1eaa77defe76e5ff63ca705d9c495077e2d5fd0126d2b53fc5bd6532",
       "dependencies": [
         "jsr:@std/internal"
       ]
     },
-    "@std/internal@1.0.4": {
-      "integrity": "62e8e4911527e5e4f307741a795c0b0a9e6958d0b3790716ae71ce085f755422"
-    },
-    "@std/testing@1.0.3": {
-      "integrity": "f98c2bee53860a5916727d7e7d3abe920dd6f9edace022e2d059f00d05c2cf42",
-      "dependencies": [
-        "jsr:@std/assert@^1.0.6",
-        "jsr:@std/internal"
-      ]
+    "@std/internal@1.0.12": {
+      "integrity": "972a634fd5bc34b242024402972cd5143eac68d8dffaca5eaa4dba30ce17b027"
     }
   },
   "npm": {
-    "dayjs@1.11.12": {
-      "integrity": "sha512-Rt2g+nTbLlDWZTwwrIXjy9MeiZmSDI375FvZs72ngxx8PDC6YXOeR3q5LAuPzjZQxhiWdRKac7RKV+YyQYfYIg=="
+    "dayjs@1.11.13": {
+      "integrity": "sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg=="
     },
-    "owlelia@0.48.1": {
-      "integrity": "sha512-DB5Ac4PCkqZ1uWt8HSTzaHZqh4BiS0DzluWnYFdSd9h4JITtceAq3qO3TmhiMtMJ3s/Z6YWj8sq+GS0yr6oZng==",
+    "owlelia@0.49.0": {
+      "integrity": "sha512-uS7Zc5plDvNxVXsTj6L6405W7ZU4cSzPaiKnNea7dxUJexkKnly0U03LM7mxnqCaalD3gkBewVkPgMioxEf8VQ==",
       "dependencies": [
         "dayjs"
       ]
@@ -40,7 +30,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@std/assert@1",
-      "npm:owlelia@~0.48.1"
+      "npm:owlelia@0.49"
     ]
   }
 }
