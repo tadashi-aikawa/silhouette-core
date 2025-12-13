@@ -3,7 +3,7 @@
   "specifiers": {
     "jsr:@std/assert@1": "1.0.16",
     "jsr:@std/internal@^1.0.12": "1.0.12",
-    "npm:owlelia@0.49": "0.49.0"
+    "npm:owlelia@~0.49.1": "0.49.1"
   },
   "jsr": {
     "@std/assert@1.0.16": {
@@ -17,11 +17,11 @@
     }
   },
   "npm": {
-    "dayjs@1.11.13": {
-      "integrity": "sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg=="
+    "dayjs@1.11.19": {
+      "integrity": "sha512-t5EcLVS6QPBNqM2z8fakk/NKel+Xzshgt8FFKAn+qwlD1pzZWxh0nVCrvFK7ZDb6XucZeF9z8C7CBWTRIVApAw=="
     },
-    "owlelia@0.49.0": {
-      "integrity": "sha512-uS7Zc5plDvNxVXsTj6L6405W7ZU4cSzPaiKnNea7dxUJexkKnly0U03LM7mxnqCaalD3gkBewVkPgMioxEf8VQ==",
+    "owlelia@0.49.1": {
+      "integrity": "sha512-fjQDTJ57YeVD+Ko9WIssjKAsi2o8sFR381WMVhObc64uiDYwamf6OPj+MofaSXf1CmVk+h88nG9agR1tYOKkyw==",
       "dependencies": [
         "dayjs"
       ]
@@ -30,7 +30,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@std/assert@1",
-      "npm:owlelia@0.49"
+      "npm:owlelia@~0.49.1"
     ]
   }
 }

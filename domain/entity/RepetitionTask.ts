@@ -41,16 +41,15 @@ export class RepetitionTask extends Entity<Props> {
     return `${this.indent}- [ ] ${this.name}`;
   }
 
-  shouldTry(date: DateTime, holidays: DateTime[]): boolean {
+  shouldTry(date: DateTime): boolean {
     return this._props.repetitions.some((r) =>
-      needTaskBy(date, holidays, r, this._props.baseDate)
+      needTaskBy(date, r, this._props.baseDate)
     );
   }
 }
 
 function needTaskBy(
   date: DateTime,
-  holidays: DateTime[],
   repetition: Repetition,
   baseDate?: DateTime,
 ): boolean {
@@ -58,7 +57,7 @@ function needTaskBy(
 
   // 稼働日シフトの調整
   if (repetition.workdayShift) {
-    if (!isWorkday(date, holidays)) {
+    if (!isWorkday(date)) {
       return false;
     }
 
@@ -67,13 +66,12 @@ function needTaskBy(
     const iterate = defineReverseDateIterateMethod(repetition.workdayShift);
     while (true) {
       shiftedTargetDate = iterate(shiftedTargetDate);
-      if (isWorkday(shiftedTargetDate, holidays)) {
+      if (isWorkday(shiftedTargetDate)) {
         break;
       }
       if (
         needTaskBy(
           shiftedTargetDate,
-          holidays,
           repetition.withWorkdayShift(undefined),
           baseDate,
         )
@@ -91,7 +89,6 @@ function needTaskBy(
     const targetDates = reverseOffsetWorkdays(
       date,
       repetition.workdayOffset,
-      holidays,
     );
     if (targetDates.length === 0) {
       return false;
@@ -100,7 +97,6 @@ function needTaskBy(
     return targetDates.some((d) =>
       needTaskBy(
         d,
-        holidays,
         repetition.withOffset({
           dayOffset: 0,
           workdayOffset: 0,
@@ -114,7 +110,7 @@ function needTaskBy(
     return false;
   }
 
-  if (!includesDay(targetDate, holidays, repetition)) {
+  if (!includesDay(targetDate, repetition)) {
     return false;
   }
 
@@ -125,7 +121,7 @@ function needTaskBy(
       // 月初まで曜日パターンに引っかからなければOK
       let beginD = targetDate.minusDays(1);
       while (beginD.isAfterOrEquals(targetDate.replaceDay(1), true)) {
-        if (includesDay(beginD, holidays, repetition)) {
+        if (includesDay(beginD, repetition)) {
           return false;
         }
         beginD = beginD.minusDays(1);
@@ -136,7 +132,7 @@ function needTaskBy(
       // 月末まで曜日パターンに引っかからなければOK
       let endD = targetDate.plusDays(1);
       while (endD.isBeforeOrEquals(targetDate.endOfMonth(), true)) {
-        if (includesDay(endD, holidays, repetition)) {
+        if (includesDay(endD, repetition)) {
           return false;
         }
         endD = endD.plusDays(1);
@@ -169,10 +165,9 @@ function needTaskBy(
 
 function includesDay(
   date: DateTime,
-  holidays: DateTime[],
   repetition: Repetition,
 ): boolean {
-  if (isHoliday(date, holidays)) {
+  if (date.isHoliday) {
     if (
       !repetition.dayOfWeekHoliday.includes(date.date.getDay()) &&
       !repetition.dayOfWeekHoliday.includes(
@@ -195,23 +190,8 @@ function includesDay(
   return true;
 }
 
-function isHoliday(date: DateTime, holidays: DateTime[]): boolean {
-  return holidays.some((x) => x.equals(date));
-}
-
-function isWeekday(date: DateTime): boolean {
-  // noinspection OverlyComplexBooleanExpressionJS
-  return (
-    date.isMonday ||
-    date.isTuesday ||
-    date.isWednesday ||
-    date.isThursday ||
-    date.isFriday
-  );
-}
-
-function isWorkday(date: DateTime, holidays: DateTime[]): boolean {
-  return isWeekday(date) && !isHoliday(date, holidays);
+function isWorkday(date: DateTime): boolean {
+  return date.isWeekday && !date.isHoliday;
 }
 
 /**
@@ -238,9 +218,8 @@ function defineReverseDateIterateMethod(
 export function reverseOffsetWorkdays(
   dst: DateTime,
   days: number,
-  holidays: DateTime[],
 ): DateTime[] {
-  if (!isWorkday(dst, holidays)) {
+  if (!isWorkday(dst)) {
     return [];
   }
 
@@ -248,8 +227,8 @@ export function reverseOffsetWorkdays(
   let d = dst.clone();
 
   if (days > 0) {
-    while (days > 0 || !isWorkday(d, holidays)) {
-      if (isWorkday(d, holidays)) {
+    while (days > 0 || !isWorkday(d)) {
+      if (isWorkday(d)) {
         days -= 1;
       }
       d = d.minusDays(1);
@@ -258,8 +237,8 @@ export function reverseOffsetWorkdays(
       }
     }
   } else {
-    while (days < 0 || !isWorkday(d, holidays)) {
-      if (isWorkday(d, holidays)) {
+    while (days < 0 || !isWorkday(d)) {
+      if (isWorkday(d)) {
         days += 1;
       }
       d = d.plusDays(1);

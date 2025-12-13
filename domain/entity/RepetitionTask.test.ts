@@ -5,7 +5,7 @@ import { parameterizedTest } from "../../tests/testUtil.ts";
 import { assertEquals } from "@std/assert/equals";
 
 const d = DateTime.of;
-const holidays = [d("2023-01-01"), d("2023-01-04"), d("2023-03-01")];
+const holidays = ["2023-01-01", "2023-01-04", "2023-03-01"];
 
 // | 日付       | 曜 | 祝 | 平 | 土日 | 稼働日 |
 // |------------|----|----|----|------|--------|
@@ -54,7 +54,7 @@ const holidays = [d("2023-01-01"), d("2023-01-04"), d("2023-03-01")];
 // | 2023/07/04 | 火 |    | O  |      | O      |
 
 parameterizedTest<
-  [DateTime, DateTime[], DateTime | undefined, string, boolean]
+  [DateTime, string[], DateTime | undefined, string, boolean]
 >(
   "shouldTry",
   // deno-fmt-ignore
@@ -594,8 +594,8 @@ parameterizedTest<
     [d("2023-05-01") , holidays          , undefined       , "workday end of month<2"        , false],
     [d("2023-05-01") , holidays          , undefined       , "workday end of month>1!"       , true],
     [d("2023-05-01") , holidays          , undefined       , "workday end of month<2!"       , false],
-    [d("2023-04-28") , [d("2023-04-28")] , undefined       , "workday end of month"          , false],
-    [d("2023-04-27") , [d("2023-04-28")] , undefined       , "workday end of month"          , true],
+    [d("2023-04-28") , ["2023-04-28"]    , undefined       , "workday end of month"          , false],
+    [d("2023-04-27") , ["2023-04-28"]    , undefined       , "workday end of month"          , true],
 
     // -----------------------------------------------------------------------------------------------
     // 月初
@@ -705,13 +705,14 @@ parameterizedTest<
     [d("2023-01-11") , holidays          , undefined       , "non workday|wed|10d/20d/30d"   , true],
   ],
   ([date, holidays, baseDate, repetitionWord, expected]) => {
+    DateTime.setHolidays(...holidays);
     const task = RepetitionTask.of({
       repetitions: Repetition.fromRepetitionsStr(repetitionWord)._ok!,
       baseDate,
       name: "hoge",
     });
 
-    assertEquals(task.shouldTry(date, holidays), expected);
+    assertEquals(task.shouldTry(date), expected);
   },
   (name, [date, _holidays, baseDate, repetitionWord, expected]) =>
     `[${name}] ${date.displayDate}: "${repetitionWord}" is "${expected}" -- ${
@@ -723,24 +724,24 @@ parameterizedTest<
   [
     Parameters<typeof reverseOffsetWorkdays>[0],
     Parameters<typeof reverseOffsetWorkdays>[1],
-    Parameters<typeof reverseOffsetWorkdays>[2],
     ReturnType<typeof reverseOffsetWorkdays>,
   ]
 >(
   "reverseOffsetWorkdays",
   // deno-fmt-ignore
   // prettier-ignore
-  //   dst              | days    | holidays | expected
+  //   dst              | days    | expected
   [
-    [  d("2023-01-03")  , 1       , holidays , [d("2023-01-02")] ],
-    [  d("2023-01-03")  , 2       , holidays , [d("2023-01-01"), d("2022-12-31"), d("2022-12-30")] ],
-    [  d("2023-01-03")  , 3       , holidays , [d("2022-12-29")] ],
-    [  d("2023-01-03")  , -1      , holidays , [d("2023-01-04"), d("2023-01-05")] ],
-    [  d("2023-01-03")  , -2      , holidays , [d("2023-01-06")] ],
-    [  d("2023-01-03")  , -3      , holidays , [d("2023-01-07"), d("2023-01-08"), d("2023-01-09")] ],
-    [  d("2023-01-04")  , 1       , holidays , [] ],
+    [  d("2023-01-03")  , 1       , [d("2023-01-02")] ],
+    [  d("2023-01-03")  , 2       , [d("2023-01-01"), d("2022-12-31"), d("2022-12-30")] ],
+    [  d("2023-01-03")  , 3       , [d("2022-12-29")] ],
+    [  d("2023-01-03")  , -1      , [d("2023-01-04"), d("2023-01-05")] ],
+    [  d("2023-01-03")  , -2      , [d("2023-01-06")] ],
+    [  d("2023-01-03")  , -3      , [d("2023-01-07"), d("2023-01-08"), d("2023-01-09")] ],
+    [  d("2023-01-04")  , 1       , [] ],
   ] as const,
-  ([dst, days, holidays, expected]) => {
-    assertEquals(reverseOffsetWorkdays(dst, days, holidays), expected);
+  ([dst, days, expected]) => {
+    DateTime.setHolidays(...holidays);
+    assertEquals(reverseOffsetWorkdays(dst, days), expected);
   },
 );
