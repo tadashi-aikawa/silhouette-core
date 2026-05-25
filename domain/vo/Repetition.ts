@@ -319,6 +319,34 @@ export function divideTokenWithOffset(
   return [token, 0, 0, undefined];
 }
 
+const DAY_OF_WEEK_JA_MAPPINGS: Record<DayOfWeekShortName, string> = {
+  sun: "日曜",
+  mon: "月曜",
+  tue: "火曜",
+  wed: "水曜",
+  thu: "木曜",
+  fri: "金曜",
+  sat: "土曜",
+};
+
+const DAY_OF_WEEK_SHORT_NAMES = [
+  "sun",
+  "mon",
+  "tue",
+  "wed",
+  "thu",
+  "fri",
+  "sat",
+] as const;
+
+function equalsArray<T>(a: T[], b: T[]): boolean {
+  return a.length === b.length && a.every((x, i) => x === b[i]);
+}
+
+function toDaysJapanese(days: number[]): string {
+  return days.map((x) => `${x}日`).join("または");
+}
+
 /**
  * 繰り返し情報を扱うクラス
  */
@@ -433,6 +461,135 @@ export class Repetition extends ValueObject<Props> {
 
   withWorkdayShift(workdayShift: ShiftDirection | undefined): Repetition {
     return new Repetition({ ...this._value, workdayShift });
+  }
+
+  toJapanese(): string {
+    return this.toJapaneseBase() + this.toJapaneseOffset();
+  }
+
+  private toJapaneseBase(): string {
+    if (this.special === "beginning of month") {
+      return this.isWorkdayPattern() ? "月初の稼働日" : "月初";
+    }
+    if (this.special === "end of month") {
+      return this.isWorkdayPattern() ? "月末の稼働日" : "月末";
+    }
+
+    if (this.day.type === "specific") {
+      if (this.month.type === "specific") {
+        return `毎年${this.month.values[0]}月${this.day.values[0]}日`;
+      }
+
+      return `毎月${toDaysJapanese(this.day.values)}`;
+    }
+
+    if (this.day.period !== 1) {
+      return `${this.day.period}日ごと`;
+    }
+
+    if (this.isEveryDayPattern()) {
+      return "毎日";
+    }
+    if (this.isWeekdayPattern()) {
+      return "平日(月～金)";
+    }
+    if (this.isWeekendPattern()) {
+      return "土日";
+    }
+    if (this.isWorkdayPattern()) {
+      return "稼働日";
+    }
+    if (this.isNonWorkdayPattern()) {
+      return "稼働日ではない日";
+    }
+
+    return this.toDayOfWeekJapanese();
+  }
+
+  private toDayOfWeekJapanese(): string {
+    return uniq([...this.dayOfWeek, ...this.dayOfWeekHoliday])
+      .map((dayOfWeek) => {
+        const inDayOfWeek = this.dayOfWeek.includes(dayOfWeek);
+        const inDayOfWeekHoliday = this.dayOfWeekHoliday.includes(dayOfWeek);
+
+        return this.toSingleDayOfWeekJapanese({
+          dayOfWeek: dayOfWeek as DayOfWeek,
+          target: inDayOfWeek && inDayOfWeekHoliday
+            ? "all"
+            : inDayOfWeek
+            ? "workday"
+            : "holiday",
+        });
+      })
+      .join("・");
+  }
+
+  private toSingleDayOfWeekJapanese(args: {
+    dayOfWeek: DayOfWeek;
+    target: "all" | "workday" | "holiday";
+  }): string {
+    const dayOfWeek = args.dayOfWeek % 10;
+    const weekNo = args.dayOfWeek >= 10
+      ? `第${Math.floor(args.dayOfWeek / 10)}`
+      : "";
+    const name = DAY_OF_WEEK_JA_MAPPINGS[DAY_OF_WEEK_SHORT_NAMES[dayOfWeek]];
+
+    switch (args.target) {
+      case "workday":
+        return `休日ではない${weekNo}${name}`;
+      case "holiday":
+        return `休日の${weekNo}${name}`;
+      case "all":
+        return `${weekNo}${name}`;
+    }
+  }
+
+  private toJapaneseOffset(): string {
+    if (this.workdayShift === "next") {
+      return "（稼働日でない場合は翌稼働日）";
+    }
+    if (this.workdayShift === "prev") {
+      return "（稼働日でない場合は前稼働日）";
+    }
+    if (this.workdayOffset > 0) {
+      return `の${this.workdayOffset}稼働日後`;
+    }
+    if (this.workdayOffset < 0) {
+      return `の${-this.workdayOffset}稼働日前`;
+    }
+    if (this.dayOffset > 0) {
+      return `の${this.dayOffset}日後`;
+    }
+    if (this.dayOffset < 0) {
+      return `の${-this.dayOffset}日前`;
+    }
+
+    return "";
+  }
+
+  private isEveryDayPattern(): boolean {
+    return equalsArray(this.dayOfWeek, [0, 1, 2, 3, 4, 5, 6]) &&
+      equalsArray(this.dayOfWeekHoliday, [0, 1, 2, 3, 4, 5, 6]);
+  }
+
+  private isWeekdayPattern(): boolean {
+    return equalsArray(this.dayOfWeek, [1, 2, 3, 4, 5]) &&
+      equalsArray(this.dayOfWeekHoliday, [1, 2, 3, 4, 5]);
+  }
+
+  private isWeekendPattern(): boolean {
+    return equalsArray(this.dayOfWeek, [0, 6]) &&
+      equalsArray(this.dayOfWeekHoliday, [0, 6]);
+  }
+
+  private isWorkdayPattern(): boolean {
+    return equalsArray(this.dayOfWeek, [1, 2, 3, 4, 5]) &&
+      equalsArray(this.dayOfWeekHoliday, []);
+  }
+
+  private isNonWorkdayPattern(): boolean {
+    return equalsArray(this.dayOfWeek, [0, 6]) &&
+      equalsArray(this.dayOfWeekHoliday, [0, 1, 2, 3, 4, 5, 6]);
   }
 
   /**

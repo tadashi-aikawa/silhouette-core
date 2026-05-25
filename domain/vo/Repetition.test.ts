@@ -200,6 +200,71 @@ parameterizedTest<[Parameters<typeof Repetition.from>[0], string | undefined]>(
 );
 
 parameterizedTest<
+  [Parameters<typeof Repetition.from>[0], string]
+>(
+  "toJapanese(ok)",
+  // deno-fmt-ignore
+  // prettier-ignore
+  //  pattern                                     | expected
+  [
+    [ "every day"                                 , "毎日"                                                       ],
+    [ "everyday"                                  , "毎日"                                                       ],
+    [ "weekday"                                   , "平日(月～金)"                                               ],
+    [ "week day"                                  , "平日(月～金)"                                               ],
+    [ "weekend"                                   , "土日"                                                       ],
+    [ "week end"                                  , "土日"                                                       ],
+    [ "workday"                                   , "稼働日"                                                     ],
+    [ "work day"                                  , "稼働日"                                                     ],
+    [ "non workday"                               , "稼働日ではない日"                                           ],
+    [ "non work day"                              , "稼働日ではない日"                                           ],
+    [ "sun"                                       , "日曜"                                                       ],
+    [ "sun/mon"                                   , "日曜・月曜"                                                 ],
+    [ "sun!"                                      , "休日ではない日曜"                                           ],
+    [ "sun*/mon*"                                 , "休日の日曜・休日の月曜"                                     ],
+    [ "2sat"                                      , "第2土曜"                                                    ],
+    [ "1fri!"                                     , "休日ではない第1金曜"                                        ],
+    [ "10d"                                       , "毎月10日"                                                   ],
+    [ "10d/20d"                                   , "毎月10日または20日"                                         ],
+    [ "0701"                                      , "毎年7月1日"                                                 ],
+    [ "every 3 day"                               , "3日ごと"                                                    ],
+    [ "beginning of month"                        , "月初"                                                       ],
+    [ "workday beginning of month"                , "月初の稼働日"                                               ],
+    [ "end of month"                              , "月末"                                                       ],
+    [ "workday end of month"                      , "月末の稼働日"                                               ],
+    [ "workday>1"                                 , "稼働日の1日後"                                              ],
+    [ "end of month<3"                            , "月末の3日前"                                                ],
+    [ "end of month<2!"                           , "月末の2稼働日前"                                            ],
+    [ "non workday>1!"                            , "稼働日ではない日の1稼働日後"                                ],
+    [ "wed*>1!"                                   , "休日の水曜の1稼働日後"                                      ],
+    [ "wed>!"                                     , "水曜（稼働日でない場合は翌稼働日）"                         ],
+    [ "2mon<!"                                    , "第2月曜（稼働日でない場合は前稼働日）"                      ],
+  ] as const,
+  ([pattern, expected]) => {
+    assertEquals(Repetition.from(pattern)._ok?.toJapanese(), expected);
+  },
+);
+
+parameterizedTest<
+  [Parameters<typeof Repetition.fromRepetitionsStr>[0], string]
+>(
+  "fromRepetitionsStr + toJapanese",
+  // deno-fmt-ignore
+  // prettier-ignore
+  //  pattern                                     | expected
+  [
+    [ "thu!|thu*>1!"                              , "休日ではない木曜 または 休日の木曜の1稼働日後"               ],
+    [ "non workday<1!|non workday>1!"             , "稼働日ではない日の1稼働日前 または 稼働日ではない日の1稼働日後" ],
+  ] as const,
+  ([pattern, expected]) => {
+    assertEquals(
+      Repetition.fromRepetitionsStr(pattern)._ok?.map((x) => x.toJapanese())
+        .join(" または "),
+      expected,
+    );
+  },
+);
+
+parameterizedTest<
   [
     Parameters<typeof divideTokenWithOffset>[0],
     ReturnType<typeof divideTokenWithOffset>,
