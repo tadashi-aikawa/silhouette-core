@@ -344,7 +344,7 @@ function equalsArray<T>(a: T[], b: T[]): boolean {
 }
 
 function toDaysJapanese(days: number[]): string {
-  return days.map((x) => `${x}日`).join("または");
+  return days.map((x) => `${x}日`).join("・");
 }
 
 /**
