@@ -8,8 +8,8 @@
     "verify": "deno lint && deno fmt --check && deno test"
   },
   "imports": {
-    "@std/assert": "jsr:@std/assert@1",
-    "owlelia": "npm:owlelia@0.50.0"
+    "@std/assert": "jsr:@std/assert@^1.0.19",
+    "owlelia": "npm:owlelia@0.50.2"
   },
   "minimumDependencyAge": 10080
 }
