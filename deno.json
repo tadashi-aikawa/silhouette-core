@@ -11,5 +11,5 @@
     "@std/assert": "jsr:@std/assert@^1.0.19",
     "owlelia": "npm:owlelia@0.50.2"
   },
-  "minimumDependencyAge": 10080
+  "minimumDependencyAge": 1440
 }
